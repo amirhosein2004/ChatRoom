@@ -1,0 +1,73 @@
+# Development environment docker-compose
+# Extends base services with development-specific configurations
+
+version: '3.8'
+
+# Import shared configurations
+include:
+  - ../../configs/services.yml
+
+services:
+  # PostgreSQL Database (Development)
+  db:
+    container_name: chatpage_db_dev
+    env_file:
+      - ../../../.env.dev
+    ports:
+      - "5432:5432"
+    networks:
+      - chatpage_network_dev
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ../../configs/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+  # Redis Cache (Development)
+  redis:
+    container_name: chatpage_redis_dev
+    ports:
+      - "6379:6379"
+    networks:
+      - chatpage_network_dev
+    volumes:
+      - redis_data_dev:/data
+      - ../../configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+
+  # Django Web Application (Development)
+  web:
+    build: 
+      context: ../../../
+      dockerfile: docker/environments/development/Dockerfile.dev
+    container_name: chatpage_web_dev
+    restart: unless-stopped
+    volumes:
+      - ../../../:/app
+      - /app/node_modules
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../../.env.dev
+    depends_on:
+      - db
+      - redis
+    networks:
+      - chatpage_network_dev
+
+  # Database Admin (Development only)
+  adminer:
+    image: adminer
+    container_name: chatpage_adminer_dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - chatpage_network_dev
+    depends_on:
+      - db
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+
+networks:
+  chatpage_network_dev:
+    driver: bridge

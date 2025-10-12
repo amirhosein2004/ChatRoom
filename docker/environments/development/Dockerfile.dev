@@ -1,0 +1,17 @@
+# Development Dockerfile for ChatPage
+# Extends base configuration with development-specific settings
+
+FROM chatpage-base:latest
+
+# Switch to root 
+USER root
+
+# Copy entrypoint script
+COPY docker/scripts/entrypoint.dev.sh /app/entrypoint.dev.sh
+RUN chmod +x /app/entrypoint.dev.sh
+
+# Switch back to app user
+USER appuser
+
+# Run entrypoint script
+ENTRYPOINT ["/app/entrypoint.dev.sh"]

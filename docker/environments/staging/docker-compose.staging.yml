@@ -1,0 +1,91 @@
+# Staging environment docker-compose
+# Production-like environment for testing before deployment
+
+version: '3.8'
+
+# Import shared configurations
+include:
+  - ../../configs/services.yml
+
+services:
+  # PostgreSQL Database (Staging)
+  db:
+    container_name: chatpage_db_staging
+    env_file:
+      - ../../../.env.stage
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    networks:
+      - chatpage_network_staging
+    volumes:
+      - postgres_data_staging:/var/lib/postgresql/data
+      - ../../configs/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chatpage_user} -d ${POSTGRES_DB:-chatpage_db}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache (Staging)
+  redis:
+    container_name: chatpage_redis_staging
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts
+    networks:
+      - chatpage_network_staging
+    volumes:
+      - redis_data_staging:/data
+      - ../../configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Django Web Application (Staging)
+  web:
+    build: 
+      context: ../../../
+      dockerfile: docker/environments/staging/Dockerfile.staging
+    container_name: chatpage_web_staging
+    restart: unless-stopped
+    volumes:
+      - static_volume_staging:/app/staticfiles
+      - media_volume_staging:/app/media
+      - logs_volume_staging:/app/logs
+    ports:
+      - "8001:8000"  # Different port for staging
+    env_file:
+      - ../../../.env.stage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chatpage_network_staging
+
+  # Nginx (Staging)
+  nginx:
+    container_name: chatpage_nginx_staging
+    ports:
+      - "8080:80"
+    volumes:
+      - ../../configs/nginx/:/etc/nginx/conf.d/:ro
+      - static_volume_staging:/app/staticfiles:ro
+      - media_volume_staging:/app/media:ro
+    networks:
+      - chatpage_network_staging
+
+volumes:
+  postgres_data_staging:
+  redis_data_staging:
+  static_volume_staging:
+  media_volume_staging:
+  logs_volume_staging:
+
+networks:
+  chatpage_network_staging:
+    driver: bridge

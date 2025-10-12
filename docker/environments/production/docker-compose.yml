@@ -1,0 +1,116 @@
+# Production environment docker-compose
+# Optimized for production deployment with security and performance
+
+version: '3.8'
+
+# Import shared configurations
+include:
+  - ../../configs/services.yml
+
+services:
+  # PostgreSQL Database (Production)
+  db:
+    container_name: chatpage_db_prod
+    env_file:
+      - ../../../.env.prod
+    # Don't expose database port in production
+    # ports:
+    #   - "5432:5432"
+    networks:
+      - chatpage_network
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ../../configs/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chatpage_user} -d ${POSTGRES_DB:-chatpage_db}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache (Production)
+  redis:
+    container_name: chatpage_redis_prod
+    # Don't expose Redis port in production
+    # ports:
+    #   - "6379:6379"
+    networks:
+      - chatpage_network
+    volumes:
+      - redis_data_prod:/data
+      - ../../configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Django Web Application (Production)
+  web:
+    build: 
+      context: ../../../
+      dockerfile: docker/environments/production/Dockerfile
+    container_name: chatpage_web_prod
+    restart: unless-stopped
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+    # Don't expose web port directly in production (use nginx)
+    expose:
+      - "8000"
+    env_file:
+      - ../../../.env.prod
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - chatpage_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    container_name: chatpage_nginx_prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../configs/nginx/:/etc/nginx/conf.d/:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+      - logs_volume:/var/log/nginx
+    networks:
+      - chatpage_network
+
+  # Log aggregator (Production)
+  logrotate:
+    image: linkyard/docker-logrotate
+    container_name: chatpage_logrotate
+    restart: unless-stopped
+    volumes:
+      - logs_volume:/logs
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - LOGROTATE_PATTERN=/logs/*.log
+      - LOGROTATE_FREQUENCY=daily
+      - LOGROTATE_COPIES=7
+
+volumes:
+  postgres_data_prod:
+  redis_data_prod:
+  static_volume:
+  media_volume:
+  logs_volume:
+
+networks:
+  chatpage_network:
+    driver: bridge
