@@ -40,6 +40,7 @@ CACHES = {
 }
 
 # Logging configuration for development
+LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -50,12 +51,12 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',
+        'level': LEVEL,
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': LEVEL,
             'propagate': False,
         },
     },

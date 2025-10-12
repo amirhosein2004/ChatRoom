@@ -54,6 +54,7 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 
 # Logging configuration
+LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -65,7 +66,7 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': LEVEL,
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
@@ -78,12 +79,12 @@ LOGGING = {
     },
     'root': {
         'handlers': ['file', 'console'],
-        'level': 'INFO',
+        'level': LEVEL,
     },
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',
+            'level': LEVEL,
             'propagate': False,
         },
     },
