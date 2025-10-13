@@ -8,5 +8,4 @@ djangorestframework==3.16.1
 bleach==6.2.0
 
 # Database
-psycopg2-binary==2.9.9
-
+psycopg2-binary==2.9.11
