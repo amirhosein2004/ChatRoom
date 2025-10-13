@@ -6,6 +6,8 @@ from django.conf import settings
 urlpatterns = [
     # app admin
     path('admin/', admin.site.urls),
+    # app room
+    path('api/room/', include('app_room.urls')),
 ]
 
 if (
