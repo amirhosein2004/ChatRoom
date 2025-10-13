@@ -6,6 +6,9 @@ FROM chatpage-base:latest
 # Switch to root to install additional packages
 USER root
 
+# Install staging dependencies
+RUN pip install --no-cache-dir -r requirements/staging.txt
+
 # Copy entrypoint script
 COPY docker/scripts/entrypoint.staging.sh /app/entrypoint.staging.sh
 RUN chmod +x /app/entrypoint.staging.sh

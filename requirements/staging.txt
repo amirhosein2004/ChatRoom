@@ -1,0 +1,7 @@
+# Staging requirements for ChatPage project
+# Similar to production but with some debugging capabilities
+
+-r production.txt
+
+# Additional debugging tools for staging
+django-debug-toolbar==4.2.0

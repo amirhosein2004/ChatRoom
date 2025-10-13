@@ -1,0 +1,7 @@
+# Production requirements for ChatPage project
+# Includes base requirements plus production-specific packages
+
+-r base.txt
+
+# Production server
+gunicorn==21.2.0

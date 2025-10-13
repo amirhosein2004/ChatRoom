@@ -12,7 +12,7 @@ services:
   db:
     container_name: chatpage_db_staging
     env_file:
-      - ../../../.env.stage
+      - ./docker/environments/staging/env.stage
     ports:
       - "5433:5432"  # Different port to avoid conflicts
     networks:
@@ -58,7 +58,7 @@ services:
     ports:
       - "8001:8000"  # Different port for staging
     env_file:
-      - ../../../.env.stage
+      - ./docker/environments/staging/env.stage
     depends_on:
       db:
         condition: service_healthy

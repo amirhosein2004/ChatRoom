@@ -25,8 +25,8 @@ RUN apt-get update \
 RUN adduser --disabled-password --gecos '' appuser
 
 # Install Python dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -r requirements/base.txt
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/staticfiles /app/media

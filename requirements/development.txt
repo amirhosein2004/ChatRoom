@@ -1,0 +1,7 @@
+# Development requirements for ChatPage project
+# Includes base requirements plus development tools
+
+-r base.txt
+
+# Development tools
+django-debug-toolbar==4.2.0

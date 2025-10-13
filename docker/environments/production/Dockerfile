@@ -6,6 +6,9 @@ FROM chatpage-base:latest
 # Switch to root to copy entrypoint script
 USER root
 
+# Install production dependencies
+RUN pip install --no-cache-dir -r requirements/production.txt
+
 # Copy entrypoint script
 COPY docker/scripts/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
