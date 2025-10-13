@@ -3,16 +3,21 @@
 
 version: '3.8'
 
-# Import shared configurations
-include:
-  - ../../configs/services.yml
+x-common-variables: &common-variables
+  POSTGRES_DB: ${DB_NAME:-chatpage_db}
+  POSTGRES_USER: ${DB_USER:-chatpage_user}
+  POSTGRES_PASSWORD: ${DB_PASSWORD:-chatpage_password}
 
 services:
   # PostgreSQL Database (Staging)
   db:
+    image: postgres:15-alpine
+    restart: unless-stopped
     container_name: chatpage_db_staging
+    environment:
+      <<: *common-variables
     env_file:
-      - ./docker/environments/staging/env.stage
+      - env.stage
     ports:
       - "5433:5432"  # Different port to avoid conflicts
     networks:
@@ -29,6 +34,9 @@ services:
 
   # Redis Cache (Staging)
   redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
     container_name: chatpage_redis_staging
     ports:
       - "6380:6379"  # Different port to avoid conflicts
@@ -58,7 +66,7 @@ services:
     ports:
       - "8001:8000"  # Different port for staging
     env_file:
-      - ./docker/environments/staging/env.stage
+      - env.stage
     depends_on:
       db:
         condition: service_healthy

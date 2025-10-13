@@ -3,16 +3,21 @@
 
 version: '3.8'
 
-# Import shared configurations
-include:
-  - ../../configs/services.yml
+x-common-variables: &common-variables
+  POSTGRES_DB: ${DB_NAME:-chatpage_db}
+  POSTGRES_USER: ${DB_USER:-chatpage_user}
+  POSTGRES_PASSWORD: ${DB_PASSWORD:-chatpage_password}
 
 services:
   # PostgreSQL Database (Production)
   db:
+    image: postgres:15-alpine
+    restart: unless-stopped
     container_name: chatpage_db_prod
+    environment:
+      <<: *common-variables
     env_file:
-      - ./docker/environments/production/.env.prod
+      - .env.prod
     # Don't expose database port in production
     # ports:
     #   - "5432:5432"
@@ -30,6 +35,9 @@ services:
 
   # Redis Cache (Production)
   redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf
     container_name: chatpage_redis_prod
     # Don't expose Redis port in production
     # ports:
@@ -61,7 +69,7 @@ services:
     expose:
       - "8000"
     env_file:
-      - ./docker/environments/production/.env.prod
+      - .env.prod
     depends_on:
       db:
         condition: service_healthy

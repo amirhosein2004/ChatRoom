@@ -9,12 +9,11 @@ USER root
 # Install staging dependencies
 RUN pip install --no-cache-dir -r requirements/staging.txt
 
-# Copy entrypoint script
-COPY docker/scripts/entrypoint.staging.sh /app/entrypoint.staging.sh
-RUN chmod +x /app/entrypoint.staging.sh
+# Make entrypoint script executable
+RUN chmod +x /app/docker/scripts/entrypoint.staging.sh
 
 # Set ownership
-RUN chown appuser:appuser /app/entrypoint.staging.sh
+RUN chown appuser:appuser /app/docker/scripts/entrypoint.staging.sh
 
 # Switch back to app user
 USER appuser
@@ -24,4 +23,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 # Run entrypoint script
-ENTRYPOINT ["/app/entrypoint.staging.sh"]
+ENTRYPOINT ["/app/docker/scripts/entrypoint.staging.sh"]

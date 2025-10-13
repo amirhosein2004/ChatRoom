@@ -9,12 +9,11 @@ USER root
 # Install production dependencies
 RUN pip install --no-cache-dir -r requirements/production.txt
 
-# Copy entrypoint script
-COPY docker/scripts/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# Make entrypoint script executable
+RUN chmod +x /app/docker/scripts/entrypoint.sh
 
 # Set ownership
-RUN chown appuser:appuser /app/entrypoint.sh
+RUN chown appuser:appuser /app/docker/scripts/entrypoint.sh
 
 # Switch back to app user
 USER appuser
@@ -24,4 +23,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 # Run entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/docker/scripts/entrypoint.sh"]

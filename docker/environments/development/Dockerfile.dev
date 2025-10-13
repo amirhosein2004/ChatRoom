@@ -9,12 +9,11 @@ USER root
 # Install development dependencies
 RUN pip install --no-cache-dir -r requirements/development.txt
 
-# Copy entrypoint script
-COPY docker/scripts/entrypoint.dev.sh /app/entrypoint.dev.sh
-RUN chmod +x /app/entrypoint.dev.sh
+# Make entrypoint script executable
+RUN chmod +x /app/docker/scripts/entrypoint.dev.sh
 
 # Switch back to app user
 USER appuser
 
 # Run entrypoint script
-ENTRYPOINT ["/app/entrypoint.dev.sh"]
+ENTRYPOINT ["/app/docker/scripts/entrypoint.dev.sh"]

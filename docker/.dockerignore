@@ -39,6 +39,7 @@ media
 .env.local
 .env.docker
 .venv
+venv
 env/
 venv/
 ENV/

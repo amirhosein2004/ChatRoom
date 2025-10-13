@@ -27,12 +27,6 @@ if [ ! -f "$DOCKERFILE_PATH" ]; then
     exit 1
 fi
 
-# Check if requirements.txt exists
-if [ ! -f "requirements.txt" ]; then
-    echo -e "${RED}❌ Error: requirements.txt not found in project root${NC}"
-    exit 1
-fi
-
 echo -e "${YELLOW}📋 Build Configuration:${NC}"
 echo "  Image Name: $IMAGE_NAME:$IMAGE_TAG"
 echo "  Dockerfile: $DOCKERFILE_PATH"
