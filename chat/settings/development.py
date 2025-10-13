@@ -21,12 +21,12 @@ DATABASES = {
 
 # Development-specific apps
 INSTALLED_APPS += [
-    # Add your development apps here
+    'debug_toolbar',
 ]
 
 # Development-specific middleware
 MIDDLEWARE += [
-    # 'debug_toolbar.middleware.DebugToolbarMiddleware',  # Add if you use django-debug-toolbar
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 # Email backend for development (console)
@@ -63,6 +63,6 @@ LOGGING = {
 }
 
 # Debug toolbar configuration (if used)
-# INTERNAL_IPS = [
-#     '127.0.0.1',
-# ]
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

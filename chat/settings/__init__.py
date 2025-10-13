@@ -11,6 +11,8 @@ if 'production' in settings_module:
     from .production import *
 elif 'development' in settings_module:
     from .development import *
+elif 'staging' in settings_module:
+    from .staging import *
 else:
     # Default to development settings
     from .development import *
