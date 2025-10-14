@@ -1,14 +1,8 @@
 -- Database initialization script for ChatPage project
 -- This script runs when PostgreSQL container starts for the first time
+-- Uses environment variables for database and user names
 
--- Create additional databases if needed
-CREATE DATABASE chatpage_dev;
--- CREATE DATABASE chatpage_test;
-
--- Connect to the chatpage_dev database to create extensions
-\c chatpage_dev;
-
--- Create extensions
+-- Create extensions in the default database (specified by POSTGRES_DB)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
@@ -17,5 +11,5 @@ SET timezone = 'UTC';
 
 -- Create custom functions or procedures here if needed
 
--- Grant permissions
-GRANT ALL PRIVILEGES ON DATABASE chatpage_dev TO chatpage_user;
+-- Note: Database and user are created automatically by PostgreSQL container
+-- using POSTGRES_DB, POSTGRES_USER, and POSTGRES_PASSWORD environment variables

@@ -3,19 +3,12 @@
 
 version: '3.8'
 
-x-common-variables: &common-variables
-  POSTGRES_DB: ${DB_NAME:-chatpage_db}
-  POSTGRES_USER: ${DB_USER:-chatpage_user}
-  POSTGRES_PASSWORD: ${DB_PASSWORD:-chatpage_password}
-
 services:
   # PostgreSQL Database (Development)
   db:
     image: postgres:15-alpine
     restart: unless-stopped
     container_name: chatpage_db_dev
-    environment:
-      <<: *common-variables
     env_file:
       - .env.dev
     ports:
@@ -24,13 +17,11 @@ services:
       - chatpage_network_dev
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
-      - ../../../configs/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
 
   # Redis Cache (Development)
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: redis-server /usr/local/etc/redis/redis.conf
     container_name: chatpage_redis_dev
     ports:
       - "6379:6379"
@@ -38,7 +29,6 @@ services:
       - chatpage_network_dev
     volumes:
       - redis_data_dev:/data
-      - ../../../configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
 
   # Django Web Application (Development)
   web:
@@ -65,7 +55,7 @@ services:
     container_name: chatpage_adminer_dev
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "9080:8080"
     networks:
       - chatpage_network_dev
     depends_on:
