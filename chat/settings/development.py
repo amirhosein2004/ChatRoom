@@ -32,11 +32,22 @@ MIDDLEWARE += [
 # Email backend for development (console)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Cache (dummy cache for development)
+# Cache configuration (Redis recommended for development)
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
     }
+}
+
+# Channels configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
 }
 
 # Logging configuration for development

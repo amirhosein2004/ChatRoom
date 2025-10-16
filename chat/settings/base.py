@@ -23,6 +23,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'channels',
 ]
 
 LOCAL_APPS = [
@@ -60,6 +61,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'chat.wsgi.application'
+ASGI_APPLICATION = 'chat.asgi.application'
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
