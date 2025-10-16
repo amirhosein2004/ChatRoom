@@ -1,19 +1,51 @@
 # Development Dockerfile for ChatPage
-# Extends base configuration with development-specific settings
+# Contains all base configuration with development-specific settings
 
-FROM chatpage-base:latest
+FROM python:3.11-slim
 
-# Switch to root 
-USER root
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install development dependencies
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+        netcat-traditional \
+        curl \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN adduser --disabled-password --gecos '' appuser
+
+# Install Python dependencies
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -r requirements/base.txt
 RUN pip install --no-cache-dir -r requirements/development.txt
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/staticfiles /app/media /app/static
+
+# Copy project files
+COPY . /app/
 
 # Make entrypoint script executable
 RUN chmod +x /app/docker/scripts/entrypoint.dev.sh
 
-# Switch back to app user
+# Set ownership
+RUN chown -R appuser:appuser /app
+
+# Switch to app user
 USER appuser
+
+# Expose port
+EXPOSE 8000
 
 # Run entrypoint script
 ENTRYPOINT ["/app/docker/scripts/entrypoint.dev.sh"]

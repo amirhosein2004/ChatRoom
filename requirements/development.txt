@@ -1,7 +1,8 @@
 # Development requirements for ChatPage project
 # Includes base requirements plus development tools
 
--r base.txt
-
 # Development tools
 django-debug-toolbar==6.0.0
+
+# asgi server
+uvicorn[standard]==0.37.0

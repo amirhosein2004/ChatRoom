@@ -42,5 +42,5 @@ else:
     print('Superuser already exists')
 "
 
-echo "🎯 Starting Django development server..."
-exec python manage.py runserver 0.0.0.0:8000
+echo "🎯 Starting Django development server with Uvicorn..."
+exec uvicorn chat.asgi:application --host 0.0.0.0 --port 8000 --reload

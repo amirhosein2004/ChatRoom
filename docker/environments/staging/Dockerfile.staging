@@ -1,22 +1,51 @@
 # Staging Dockerfile for ChatPage
 # Similar to production but with some debugging capabilities
 
-FROM chatpage-base:latest
+FROM python:3.11-slim
 
-# Switch to root to install additional packages
-USER root
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install staging dependencies
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        build-essential \
+        libpq-dev \
+        netcat-traditional \
+        curl \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN adduser --disabled-password --gecos '' appuser
+
+# Install Python dependencies
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -r requirements/base.txt
 RUN pip install --no-cache-dir -r requirements/staging.txt
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/staticfiles /app/media /app/static
+
+# Copy project files
+COPY . /app/
 
 # Make entrypoint script executable
 RUN chmod +x /app/docker/scripts/entrypoint.staging.sh
 
 # Set ownership
-RUN chown appuser:appuser /app/docker/scripts/entrypoint.staging.sh
+RUN chown -R appuser:appuser /app
 
-# Switch back to app user
+# Switch to app user
 USER appuser
+
+# Expose port
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
