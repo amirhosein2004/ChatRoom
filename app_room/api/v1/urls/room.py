@@ -1,6 +1,18 @@
+"""
+URL routes for HTML pages (Template Views)
+this file includes HTML page routes
+"""
 from django.urls import path
-from app_room.api.v1.views.room_views import chat_room
+from app_room.api.v1.views import ChatRoomView, RoomListPageView
+
 
 urlpatterns = [
-    path('', chat_room, name='chat_room'),
+    # room list page
+    path('rooms/list/', RoomListPageView.as_view(), name='room_list_page'),
+    
+    # public chat room
+    path('chat/', ChatRoomView.as_view(), name='chat_room'),
+    
+    # specific chat room
+    path('chat/<slug:slug>/', ChatRoomView.as_view(), name='chat_room_detail'),
 ]

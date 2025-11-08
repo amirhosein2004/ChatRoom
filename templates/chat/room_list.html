@@ -97,6 +97,103 @@
             font-size: 18px;
             margin-top: 50px;
         }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #075e54;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #075e54;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #128c7e;
+        }
+        .btn-secondary {
+            background: #ddd;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #ccc;
+        }
+        .error-message {
+            color: #d32f2f;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .success-message {
+            color: #388e3c;
+            margin-top: 10px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -104,35 +201,179 @@
         <div class="header">
             <h1>اتاق‌های چت</h1>
             <p>به اتاق‌های مختلف بپیوندید و با دیگران گفتگو کنید</p>
-            <a href="{% url 'create_room' %}" class="create-room-btn">ایجاد اتاق جدید</a>
+            <button onclick="showCreateRoomModal()" class="create-room-btn">ایجاد اتاق جدید</button>
         </div>
 
-        {% if rooms %}
-            <div class="rooms-grid">
-                {% for room in rooms %}
-                <div class="room-card">
-                    <div class="room-name">{{ room.name }}</div>
-                    <div class="room-description">
-                        {% if room.description %}
-                            {{ room.description }}
-                        {% else %}
-                            توضیحی برای این اتاق ثبت نشده است.
-                        {% endif %}
-                    </div>
-                    <div class="room-info">
-                        <span>اعضا: {{ room.members.count }}</span>
-                        <span>ایجاد شده توسط: {{ room.created_by.username }}</span>
-                    </div>
-                    <a href="{% url 'room_detail' room.id %}" class="join-btn">ورود به اتاق</a>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="no-rooms">
-                <p>هیچ اتاق عمومی‌ای وجود ندارد.</p>
-                <p>اولین اتاق را ایجاد کنید!</p>
-            </div>
-        {% endif %}
+        <!-- لیست اتاق‌ها - از API بارگذاری می‌شود -->
+        <div id="loadingRooms" style="text-align: center; padding: 50px; color: #666;">
+            <div style="font-size: 48px;">⏳</div>
+            <p>در حال بارگذاری اتاق‌ها...</p>
+        </div>
+        
+        <div class="rooms-grid" id="roomsGrid" style="display: none;">
+            <!-- اتاق‌ها با JavaScript اضافه می‌شوند -->
+        </div>
+        
+        <div class="no-rooms" id="noRooms" style="display: none;">
+            <p>هیچ اتاق عمومی‌ای وجود ندارد.</p>
+            <p>اولین اتاق را ایجاد کنید!</p>
+        </div>
     </div>
+
+    <!-- Modal ساخت اتاق -->
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">ایجاد اتاق جدید</div>
+            
+            <form id="createRoomForm">
+                <div class="form-group">
+                    <label for="roomName">نام اتاق *</label>
+                    <input type="text" id="roomName" name="name" required placeholder="مثال: اتاق بحث فناوری">
+                </div>
+                
+                <div class="form-group">
+                    <label for="roomDescription">توضیحات</label>
+                    <textarea id="roomDescription" name="description" placeholder="توضیحات مختصری درباره اتاق..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="isPublic" name="is_public" checked>
+                        <label for="isPublic">اتاق عمومی (همه می‌توانند ببینند)</label>
+                    </div>
+                </div>
+                
+                <div id="formMessage"></div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">ایجاد اتاق</button>
+                    <button type="button" onclick="hideCreateRoomModal()" class="btn btn-secondary">لغو</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // بارگذاری لیست اتاق‌ها از API
+        async function loadRooms() {
+            const loadingEl = document.getElementById('loadingRooms');
+            const gridEl = document.getElementById('roomsGrid');
+            const noRoomsEl = document.getElementById('noRooms');
+            
+            try {
+                const response = await fetch('/api/room/v1/rooms/');
+                const rooms = await response.json();
+                
+                loadingEl.style.display = 'none';
+                
+                if (rooms.length === 0) {
+                    noRoomsEl.style.display = 'block';
+                } else {
+                    gridEl.style.display = 'grid';
+                    rooms.forEach(room => {
+                        const roomCard = createRoomCard(room);
+                        gridEl.appendChild(roomCard);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+                loadingEl.innerHTML = '<p style="color: #d32f2f;">خطا در بارگذاری اتاق‌ها</p>';
+            }
+        }
+        
+        // ساخت کارت اتاق
+        function createRoomCard(room) {
+            const card = document.createElement('div');
+            card.className = 'room-card';
+            
+            const description = room.description || 'توضیحی برای این اتاق ثبت نشده است.';
+            
+            card.innerHTML = `
+                <div class="room-name">${room.name}</div>
+                <div class="room-description">${description}</div>
+                <div class="room-info">
+                    <span>اعضا: ${room.member_count}</span>
+                    <span>ایجاد شده توسط: ${room.creator.username}</span>
+                </div>
+                <a href="/api/room/v1/chat/${room.slug}/" class="join-btn">ورود به اتاق</a>
+            `;
+            
+            return card;
+        }
+        
+        // بارگذاری اولیه
+        loadRooms();
+        
+        // نمایش modal
+        function showCreateRoomModal() {
+            document.getElementById('createRoomModal').classList.add('show');
+        }
+
+        // مخفی کردن modal
+        function hideCreateRoomModal() {
+            document.getElementById('createRoomModal').classList.remove('show');
+            document.getElementById('createRoomForm').reset();
+            document.getElementById('formMessage').innerHTML = '';
+        }
+
+        // بستن modal با کلیک روی پس‌زمینه
+        document.getElementById('createRoomModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideCreateRoomModal();
+            }
+        });
+
+        // ارسال فرم ساخت اتاق
+        document.getElementById('createRoomForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formMessage = document.getElementById('formMessage');
+            formMessage.innerHTML = '';
+            
+            // دریافت داده‌های فرم
+            const formData = {
+                name: document.getElementById('roomName').value,
+                description: document.getElementById('roomDescription').value,
+                is_public: document.getElementById('isPublic').checked
+            };
+            
+            try {
+                const response = await fetch('/api/room/v1/rooms/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    formMessage.innerHTML = '<div class="success-message">✓ اتاق با موفقیت ایجاد شد!</div>';
+                    
+                    // انتقال به اتاق جدید بعد از 1 ثانیه
+                    setTimeout(() => {
+                        window.location.href = `/api/room/v1/chat/${data.slug}/`;
+                    }, 1000);
+                } else {
+                    // نمایش خطاها
+                    let errorMsg = 'خطا در ایجاد اتاق:';
+                    if (data.name) {
+                        errorMsg += '<br>نام: ' + data.name.join(', ');
+                    }
+                    if (data.description) {
+                        errorMsg += '<br>توضیحات: ' + data.description.join(', ');
+                    }
+                    if (data.error) {
+                        errorMsg += '<br>' + data.error;
+                    }
+                    formMessage.innerHTML = '<div class="error-message">' + errorMsg + '</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                formMessage.innerHTML = '<div class="error-message">خطا در ارتباط با سرور</div>';
+            }
+        });
+    </script>
 </body>
 </html>

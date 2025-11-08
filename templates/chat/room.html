@@ -3,171 +3,831 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>چت روم</title>
+    <title>چت روم - ارسال پیام و عکس</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
+
         .chat-container {
-            width: 90%;
-            max-width: 800px;
-            height: 600px;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 700px;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
+
         .chat-header {
-            background: #075e54;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px 10px 0 0;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
+        .chat-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .user-icon {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
         #chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #e5ddd5;
+            background: #f5f5f5;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.03) 10px, rgba(255,255,255,.03) 20px);
         }
+
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
         .message {
             margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 7px;
-            max-width: 70%;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-bubble {
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 65%;
             word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
-        .message.own {
-            background: #dcf8c6;
-            margin-left: auto;
-            text-align: right;
-        }
-        .message.other {
-            background: white;
+
+        .message.own .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             margin-right: auto;
+            margin-left: 0;
+            border-bottom-left-radius: 4px;
         }
+
+        .message.other .message-bubble {
+            background: white;
+            color: #333;
+            margin-left: auto;
+            margin-right: 0;
+            border-bottom-right-radius: 4px;
+        }
+
         .message-username {
-            font-weight: bold;
+            font-weight: 600;
             margin-bottom: 5px;
-            font-size: 14px;
-            color: #075e54;
+            font-size: 13px;
         }
+
+        .message.own .message-username {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .message.other .message-username {
+            color: #667eea;
+        }
+
+        .message-content {
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .message-image {
+            max-width: 300px;
+            border-radius: 12px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        .message-time {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
         .chat-input-container {
             padding: 20px;
-            background: #f0f0f0;
-            border-radius: 0 0 10px 10px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
         }
-        .input-group {
+
+        .username-setup {
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .username-setup.show {
+            display: block;
+        }
+
+        .username-input-group {
             display: flex;
             gap: 10px;
-            margin-bottom: 10px;
+            align-items: center;
         }
-        input[type="text"] {
+
+        .username-input-group input {
             flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
             border-radius: 25px;
             font-size: 14px;
             outline: none;
+            transition: border-color 0.3s;
         }
-        button {
-            padding: 12px 30px;
-            background: #075e54;
+
+        .username-input-group input:focus {
+            border-color: #667eea;
+        }
+
+        .username-input-group button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
         }
-        button:hover {
-            background: #128c7e;
+
+        .username-input-group button:hover {
+            transform: translateY(-2px);
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .message-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #message-input {
+            width: 100%;
+            padding: 14px 50px 14px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            font-family: inherit;
+            resize: none;
+            min-height: 50px;
+            max-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        #message-input:focus {
+            border-color: #667eea;
+        }
+
+        .attach-button {
+            position: absolute;
+            left: 15px;
+            bottom: 13px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 22px;
+            color: #667eea;
+            transition: transform 0.2s;
+        }
+
+        .attach-button:hover {
+            transform: scale(1.1);
+        }
+
+        #image-input {
+            display: none;
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .image-preview {
+            display: none;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 12px;
+            border: 2px solid #667eea;
+        }
+
+        .image-preview-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading-indicator.show {
+            display: block;
+        }
+
+        .connection-status {
+            display: none;
+            padding: 10px;
+            text-align: center;
+            background: #ff4444;
+            color: white;
+            font-size: 14px;
+        }
+
+        .connection-status.show {
+            display: block;
+        }
+
+        .history-loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: #667eea;
+            font-size: 13px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .history-loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-bubble {
+                max-width: 80%;
+            }
+
+            .message-image {
+                max-width: 200px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2>چت روم عمومی</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="{% url 'room_api_v1:room_list_page' %}" style="color: white; text-decoration: none; font-size: 24px;" title="بازگشت به لیست اتاق‌ها">←</a>
+                <h2>💬 {{ room_name }}</h2>
+            </div>
+            <div class="user-info">
+                <div class="user-icon">👤</div>
+                <span id="current-user-display">مهمان</span>
+            </div>
+        </div>
+
+        <div class="connection-status" id="connection-status">
+            🔴 اتصال قطع شد - در حال تلاش برای اتصال مجدد...
         </div>
         
         <div id="chat-messages">
-            {% for message in messages %}
-            <div class="message other">
-                <div class="message-username">{{ message.user.username }}</div>
-                <div>{{ message.content }}</div>
+            <!-- پیام‌ها از API بارگذاری می‌شوند -->
+            <div class="history-loading" id="history-loading">
+                ⏳ در حال بارگذاری پیام‌های قدیمی‌تر...
             </div>
-            {% endfor %}
+            <div style="text-align: center; padding: 30px; color: #999;" id="loadingMessages">
+                <div style="font-size: 36px;">⏳</div>
+                <p>در حال بارگذاری پیام‌ها...</p>
+            </div>
         </div>
         
         <div class="chat-input-container">
-            <div class="input-group">
-                <input type="text" id="username-input" placeholder="نام کاربری خود را وارد کنید">
+            <div class="username-setup" id="username-setup">
+                <div class="username-input-group">
+                    <input type="text" id="username-input" placeholder="نام کاربری خود را وارد کنید..." maxlength="30">
+                    <button id="username-confirm">✓ تایید</button>
+                </div>
             </div>
-            <div class="input-group">
-                <input type="text" id="message-input" placeholder="پیام خود را بنویسید...">
-                <button id="send-button">ارسال</button>
+
+            <div class="image-preview" id="image-preview">
+                <img id="preview-img" src="" alt="Preview">
+                <button class="image-preview-close" id="preview-close">×</button>
+            </div>
+
+            <div class="loading-indicator" id="loading-indicator">
+                در حال آپلود عکس...
+            </div>
+
+            <div class="input-area">
+                <div class="message-input-wrapper">
+                    <textarea id="message-input" placeholder="پیام خود را بنویسید..." rows="1"></textarea>
+                    <button class="attach-button" id="attach-button" title="ارسال عکس">
+                        📎
+                    </button>
+                    <input type="file" id="image-input" accept="image/*">
+                </div>
+                <button class="send-button" id="send-button" title="ارسال">
+                    ➤
+                </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Room Info من Django Template
+        const roomSlug = '{{ room_slug }}';
+        const roomName = '{{ room_name }}';
+        
+        // Elements
         const chatMessages = document.getElementById('chat-messages');
         const messageInput = document.getElementById('message-input');
         const usernameInput = document.getElementById('username-input');
+        const usernameSetup = document.getElementById('username-setup');
+        const usernameConfirm = document.getElementById('username-confirm');
+        const currentUserDisplay = document.getElementById('current-user-display');
         const sendButton = document.getElementById('send-button');
+        const attachButton = document.getElementById('attach-button');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const previewImg = document.getElementById('preview-img');
+        const previewClose = document.getElementById('preview-close');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const connectionStatus = document.getElementById('connection-status');
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const chatSocket = new WebSocket(
-            protocol + '//' + window.location.host + '/ws/chat/'
-        );
+        // Pagination state
+        let messageOffset = 0;
+        let isLoadingHistory = false;
+        let hasMoreMessages = true;
+        
+        // Username management
+        let currentUsername = localStorage.getItem('chatUsername') || '';
+        
+        if (!currentUsername) {
+            usernameSetup.classList.add('show');
+        } else {
+            currentUserDisplay.textContent = currentUsername;
+        }
 
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message other';
-            messageDiv.innerHTML = `
-                <div class="message-username">${data.username}</div>
-                <div>${data.message}</div>
-            `;
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        usernameConfirm.onclick = function() {
+            const username = usernameInput.value.trim();
+            if (username) {
+                currentUsername = username;
+                localStorage.setItem('chatUsername', username);
+                currentUserDisplay.textContent = username;
+                usernameSetup.classList.remove('show');
+            }
         };
 
-        chatSocket.onclose = function(e) {
-            console.error('اتصال چت بسته شد');
-        };
+        usernameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                usernameConfirm.click();
+            }
+        });
 
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            const username = usernameInput.value.trim() || 'مهمان';
+        async function loadInitialMessages() {
+            const loadingEl = document.getElementById('loadingMessages');
             
-            if (message) {
-                chatSocket.send(JSON.stringify({
-                    'message': message,
-                    'username': username
-                }));
-                messageInput.value = '';
+            try {
+                const url = roomSlug === 'public_chat' 
+                    ? '/api/room/v1/messages/?offset=0'
+                    : `/api/room/v1/messages/${roomSlug}/?offset=0`;
+                
+                const response = await fetch(url);
+                const messages = await response.json();
+                
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+                
+                console.log(`✅ بارگذاری ${messages.length} پیام | Offset: 0 → ${messages.length}`);
+                
+                if (messages.length < 50) {
+                    hasMoreMessages = false;
+                }
+                
+                messages.reverse().forEach(message => {
+                    displayMessage({
+                        username: message.user.username,
+                        message: message.content,
+                        message_type: message.message_type,
+                        image_url: message.image_url,
+                        timestamp: message.timestamp
+                    }, false);
+                });
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                messageOffset = messages.length;
+                
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                if (loadingEl) {
+                    loadingEl.innerHTML = '<p style="color: #d32f2f;">خطا در بارگذاری پیام‌ها</p>';
+                }
             }
         }
 
-        sendButton.onclick = sendMessage;
+        async function loadMoreMessages() {
+            if (isLoadingHistory || !hasMoreMessages) {
+                return;
+            }
+            
+            console.log(`🔄 درخواست offset=${messageOffset}`);
+            
+            isLoadingHistory = true;
+            const historyLoading = document.getElementById('history-loading');
+            historyLoading.classList.add('show');
+            
+            // Save current scroll position
+            const previousScrollHeight = chatMessages.scrollHeight;
+            const previousScrollTop = chatMessages.scrollTop;
+            
+            try {
+                const url = roomSlug === 'public_chat' 
+                    ? `/api/room/v1/messages/?offset=${messageOffset}`
+                    : `/api/room/v1/messages/${roomSlug}/?offset=${messageOffset}`;
+                
+                const response = await fetch(url);
+                const messages = await response.json();
+                console.log(`✅ ${messages.length} پیام جدید | Offset: ${messageOffset} → ${messageOffset + messages.length}`);
+                
+                if (messages.length === 0) {
+                    hasMoreMessages = false;
+                    historyLoading.innerHTML = '✓ همه پیام‌ها بارگذاری شدند';
+                    setTimeout(() => {
+                        historyLoading.classList.remove('show');
+                    }, 2000);
+                } else {
+                    if (messages.length < 50) {
+                        hasMoreMessages = false;
+                    }
+                    
+                    // Insert messages at the top (after the loading indicator)
+                    const messagesReversed = messages.reverse();
+                    messagesReversed.forEach(message => {
+                        displayMessage({
+                            username: message.user.username,
+                            message: message.content,
+                            message_type: message.message_type,
+                            image_url: message.image_url,
+                            timestamp: message.timestamp
+                        }, true);
+                    });
+                    
+                    // Restore scroll position to maintain user's view
+                    const newScrollHeight = chatMessages.scrollHeight;
+                    chatMessages.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
+                    
+                    messageOffset += messages.length;
+                    console.log(`✅ Offset به‌روزرسانی شد: ${messageOffset}`);
+                    historyLoading.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Error loading more messages:', error);
+                historyLoading.innerHTML = '❌ خطا در بارگذاری پیام‌ها';
+                setTimeout(() => {
+                    historyLoading.classList.remove('show');
+                }, 2000);
+            } finally {
+                isLoadingHistory = false;
+            }
+        }
 
-        messageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        // Scroll event listener for infinite scroll
+        chatMessages.addEventListener('scroll', function() {
+            const scrollTop = chatMessages.scrollTop;
+            
+            // Trigger loading when user is within 200px of the top
+            if (scrollTop < 200 && !isLoadingHistory && hasMoreMessages) {
+                console.log('📥 بارگذاری خودکار پیام‌های قدیمی‌تر...');
+                loadMoreMessages();
+            }
+        });
+
+        // WebSocket connection
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        let chatSocket = new WebSocket(
+            protocol + '//' + window.location.host + '/ws/chat/' + roomSlug + '/'
+        );
+
+        chatSocket.onopen = function() {
+            console.log('✓ متصل به سرور');
+            connectionStatus.classList.remove('show');
+            
+            // بارگذاری پیام‌های اولیه
+            loadInitialMessages();
+        };
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            displayMessage(data);
+        };
+
+        chatSocket.onerror = function(e) {
+            console.error('خطا در اتصال', e);
+            connectionStatus.classList.add('show');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('اتصال بسته شد');
+            connectionStatus.classList.add('show');
+            
+            // Try to reconnect after 3 seconds
+            setTimeout(function() {
+                console.log('تلاش برای اتصال مجدد...');
+                chatSocket = new WebSocket(
+                    protocol + '//' + window.location.host + '/ws/chat/public_chat/'
+                );
+            }, 3000);
+        };
+
+        // Display message
+        function displayMessage(data, insertAtTop = false) {
+            const messageDiv = document.createElement('div');
+            const isOwn = data.username === currentUsername;
+            messageDiv.className = isOwn ? 'message own' : 'message other';
+            
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
+            
+            const usernameDiv = document.createElement('div');
+            usernameDiv.className = 'message-username';
+            usernameDiv.textContent = data.username;
+            bubbleDiv.appendChild(usernameDiv);
+            
+            if (data.message_type === 'image' && data.image_url) {
+                const img = document.createElement('img');
+                img.src = data.image_url;
+                img.className = 'message-image';
+                img.alt = 'Image';
+                img.onclick = function() {
+                    window.open(data.image_url, '_blank');
+                };
+                bubbleDiv.appendChild(img);
+            } else {
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = data.message || '';
+                bubbleDiv.appendChild(contentDiv);
+            }
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            
+            // Parse timestamp if available, otherwise use current time
+            let timeText;
+            if (data.timestamp) {
+                const msgDate = new Date(data.timestamp);
+                timeText = msgDate.getHours().toString().padStart(2, '0') + ':' + 
+                          msgDate.getMinutes().toString().padStart(2, '0');
+            } else {
+                const now = new Date();
+                timeText = now.getHours().toString().padStart(2, '0') + ':' + 
+                          now.getMinutes().toString().padStart(2, '0');
+            }
+            timeDiv.textContent = timeText;
+            bubbleDiv.appendChild(timeDiv);
+            
+            messageDiv.appendChild(bubbleDiv);
+            
+            if (insertAtTop) {
+                // Insert after the history loading indicator
+                const historyLoading = document.getElementById('history-loading');
+                if (historyLoading && historyLoading.nextSibling) {
+                    chatMessages.insertBefore(messageDiv, historyLoading.nextSibling);
+                } else {
+                    chatMessages.appendChild(messageDiv);
+                }
+            } else {
+                chatMessages.appendChild(messageDiv);
+                // Only auto-scroll for new messages (not history)
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // Send text message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            
+            if (!currentUsername) {
+                alert('لطفا ابتدا نام کاربری خود را وارد کنید');
+                usernameSetup.classList.add('show');
+                return;
+            }
+            
+            if (message) {
+                chatSocket.send(JSON.stringify({
+                    'message_type': 'text',
+                    'username': currentUsername,
+                    'message': message
+                }));
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+            }
+        }
+
+        sendButton.onclick = function() {
+            if (imageInput.files.length > 0) {
+                uploadImage();
+            } else {
+                sendMessage();
+            }
+        };
+
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 sendMessage();
             }
         });
 
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Image upload
+        attachButton.onclick = function() {
+            imageInput.click();
+        };
+
+        imageInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    imagePreview.classList.add('show');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        previewClose.onclick = function() {
+            imagePreview.classList.remove('show');
+            imageInput.value = '';
+        };
+
+        async function uploadImage() {
+            const file = imageInput.files[0];
+            
+            if (!currentUsername) {
+                alert('لطفا ابتدا نام کاربری خود را وارد کنید');
+                usernameSetup.classList.add('show');
+                return;
+            }
+            
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('username', currentUsername);
+            formData.append('room_slug', roomSlug);
+
+            loadingIndicator.classList.add('show');
+            
+            try {
+                const response = await fetch('/api/room/v1/upload-image/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('عکس آپلود شد:', data);
+                    
+                    // Clear preview
+                    imagePreview.classList.remove('show');
+                    imageInput.value = '';
+                } else {
+                    const error = await response.json();
+                    alert('خطا در آپلود عکس: ' + JSON.stringify(error));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('خطا در آپلود عکس');
+            } finally {
+                loadingIndicator.classList.remove('show');
+            }
+        }
+
+        // Scroll to bottom on load
         chatMessages.scrollTop = chatMessages.scrollHeight;
     </script>
 </body>
